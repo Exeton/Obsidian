@@ -4,13 +4,13 @@ namespace Obsidian.Items
 {
     public class Item
     {
+        public string TrimmedName => this.UnlocalizedName.Replace("minecraft:", "");
+
         public string UnlocalizedName { get; set; }
 
-        public Materials Type { get; }
+        public Materials Type { get; internal set; }
 
         public int Id { get; set; }
-        public ItemNbt Nbt { get; set; }
-
-        public Item(Materials type) => this.Type = type;
+        public ItemMeta Nbt { get; set; }
     }
 }

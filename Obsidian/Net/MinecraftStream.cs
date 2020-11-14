@@ -482,7 +482,7 @@ namespace Obsidian.Net
                 await this.WriteByteAsync((sbyte)slot.Count);
 
                 var writer = new NbtWriter(this, "");
-                if (slot.Nbt == null)
+                if (slot.Metadata == default)
                 {
                     writer.EndCompound();
                     writer.Finish();
@@ -490,8 +490,9 @@ namespace Obsidian.Net
                 }
 
                 //TODO write enchants
-                writer.WriteInt("Damage", slot.Nbt.Damage);
+                writer.WriteInt("Damage", slot.Metadata.Durability);
                 writer.WriteByte("Count", (byte)slot.Count);
+                writer.WriteByte("Slot", slot.Metadata.Slot);
 
                 writer.EndCompound();
 
@@ -501,21 +502,20 @@ namespace Obsidian.Net
 
         public async Task<ItemStack> ReadSlotAsync()
         {
-            var slot = new ItemStack
-            {
-                Present = await this.ReadBooleanAsync()
-            };
+            var present = await this.ReadBooleanAsync();
 
-            if (slot.Present)
+            if (present)
             {
-                slot.Id = await this.ReadVarIntAsync();
-                slot.Count = await this.ReadByteAsync();
+                var slot = new ItemStack((short)await this.ReadVarIntAsync(), new ItemMeta { Count = await this.ReadByteAsync() })
+                {
+                    Present = await this.ReadBooleanAsync(),
+                };
 
                 var reader = new NbtReader(this);
 
                 while (reader.ReadToFollowing())
                 {
-                    slot.Nbt = new ItemNbt();
+                    slot.Metadata = new ItemMeta();
 
                     if (reader.IsCompound)
                     {
@@ -540,7 +540,7 @@ namespace Obsidian.Net
                                         {
                                             if (enchant is NbtCompound compound)
                                             {
-                                                slot.Nbt.Enchantments.Add(new Enchantment
+                                                slot.Metadata.AddEnchantment(new Enchantment
                                                 {
                                                     Id = compound.Get<NbtString>("id").Value,
                                                     Level = compound.Get<NbtShort>("lvl").Value
@@ -561,7 +561,7 @@ namespace Obsidian.Net
                                             if (enchantment is NbtCompound compound)
                                             {
 
-                                                slot.Nbt.StoredEnchantments.Add(new Enchantment
+                                                slot.Metadata.AddStoredEnchantment(new Enchantment
                                                 {
                                                     Id = compound.Get<NbtString>("id").Value,
                                                     Level = compound.Get<NbtShort>("lvl").Value
@@ -572,14 +572,14 @@ namespace Obsidian.Net
                                     }
                                 case "slot":
                                     {
-                                        slot.Nbt.Slot = tag.ByteValue;
+                                        slot.Metadata.Slot = tag.ByteValue;
                                         //Console.WriteLine($"Setting slot: {slot.Nbt.Slot}");
                                         break;
                                     }
                                 case "damage":
                                     {
 
-                                        slot.Nbt.Damage = tag.IntValue;
+                                        slot.Metadata.Durability = tag.IntValue;
                                         //Globals.PacketLogger.LogDebug($"Setting damage: {tag.IntValue}");
                                         break;
                                     }
@@ -598,9 +598,11 @@ namespace Obsidian.Net
                         Globals.PacketLogger.LogDebug($"Other Name: {reader.TagName}");
                     }
                 }
+
+                return slot;
             }
 
-            return slot;
+            return default;
         }
 
         #endregion Writing
@@ -610,21 +612,21 @@ namespace Obsidian.Net
         [ReadMethod(DataType.Slot)]
         public ItemStack ReadSlot()
         {
-            var slot = new ItemStack();
 
             var present = this.ReadBoolean();
-            slot.Present = present;
 
             if (present)
             {
-                slot.Id = this.ReadVarInt();
-                slot.Count = this.ReadSignedByte();
+                var slot = new ItemStack((short)this.ReadVarInt(), new ItemMeta { Count = this.ReadSignedByte() })
+                {
+                    Present = present,
+                };
 
                 var reader = new NbtReader(this);
 
                 while (reader.ReadToFollowing())
                 {
-                    slot.Nbt = new ItemNbt();
+                    slot.Metadata = new ItemMeta();
 
                     if (reader.IsCompound)
                     {
@@ -642,7 +644,7 @@ namespace Obsidian.Net
                                         {
                                             if (enchant is NbtCompound compound)
                                             {
-                                                slot.Nbt.Enchantments.Add(new Enchantment
+                                                slot.Metadata.AddEnchantment(new Enchantment
                                                 {
                                                     Id = compound.Get<NbtString>("id").Value,
                                                     Level = compound.Get<NbtShort>("lvl").Value
@@ -662,7 +664,7 @@ namespace Obsidian.Net
                                         {
                                             if (enchantment is NbtCompound compound)
                                             {
-                                                slot.Nbt.StoredEnchantments.Add(new Enchantment
+                                                slot.Metadata.AddStoredEnchantment(new Enchantment
                                                 {
                                                     Id = compound.Get<NbtString>("id").Value,
                                                     Level = compound.Get<NbtShort>("lvl").Value
@@ -673,13 +675,13 @@ namespace Obsidian.Net
                                     }
                                 case "slot":
                                     {
-                                        slot.Nbt.Slot = tag.ByteValue;
+                                        slot.Metadata.Slot = tag.ByteValue;
                                         break;
                                     }
                                 case "damage":
                                     {
 
-                                        slot.Nbt.Damage = tag.IntValue;
+                                        slot.Metadata.Durability = tag.IntValue;
                                         break;
                                     }
                                 default:
@@ -701,9 +703,10 @@ namespace Obsidian.Net
 
                 }
 
+                return slot;
             }
 
-            return slot;
+            return default;
         }
 
         public async Task<object> ReadAsync(Type type, DataType dataType, FieldAttribute attr, int? readLen = null)

@@ -10,6 +10,7 @@ using Obsidian.Items;
 using Obsidian.Net;
 using Obsidian.Net.Packets.Play.Client;
 using Obsidian.Util.Extensions;
+using Obsidian.Util.Registry;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -29,7 +30,7 @@ namespace Obsidian.Entities
         /// <summary>
         /// The players inventory
         /// </summary>
-        public Inventory Inventory { get; private set; } = new Inventory();
+        public Inventory Inventory { get;  }
         public Inventory OpenedInventory { get; set; }
 
         public Block LastInteractedBlock { get; set; }
@@ -94,6 +95,7 @@ namespace Obsidian.Entities
             this.Username = username;
             this.client = client;
             this.EntityId = client.id;
+            this.Inventory = new Inventory(uuid);
         }
 
         internal override async Task UpdateAsync(Server server, Position position, bool onGround)
@@ -116,10 +118,9 @@ namespace Obsidian.Entities
                         PickupItemCount = item.Count
                     });
 
-                    var slot = this.Inventory.AddItem(new ItemStack(item.Id, item.Count)
+                    var slot = this.Inventory.AddItem(new ItemStack((short)item.Id, new ItemMeta { Name = Registry.GetItem(item.Id).TrimmedName,  })
                     {
                         Present = true,
-                        Nbt = item.Nbt
                     });
 
                     await this.client.SendPacketAsync(new SetSlot
@@ -155,10 +156,9 @@ namespace Obsidian.Entities
                         CollectorEntityId = this.EntityId,
                         PickupItemCount = item.Count
                     });
-                    var slot = this.Inventory.AddItem(new ItemStack(item.Id, item.Count)
+                    var slot = this.Inventory.AddItem(new ItemStack((short)item.Id, item.Nbt)
                     {
-                        Present = true,
-                        Nbt = item.Nbt
+                        Present = true
                     });
 
                     await this.client.SendPacketAsync(new SetSlot
@@ -190,10 +190,9 @@ namespace Obsidian.Entities
                         PickupItemCount = item.Count
                     });
 
-                    var slot = this.Inventory.AddItem(new ItemStack(item.Id, item.Count)
+                    var slot = this.Inventory.AddItem(new ItemStack((short)item.Id, item.Nbt)
                     {
-                        Present = true,
-                        Nbt = item.Nbt
+                        Present = true
                     });
 
                     await this.client.SendPacketAsync(new SetSlot
@@ -274,7 +273,7 @@ namespace Obsidian.Entities
         public Task SendMessageAsync(ChatMessage message, MessageType type = MessageType.Chat, Guid? sender = null) =>
             client.QueuePacketAsync(new ChatMessagePacket(message, type, sender ?? Guid.Empty));
 
-        public Task SendSoundAsync(Sounds soundId, SoundPosition position, SoundCategory category = SoundCategory.Master, float pitch = 1f, float volume = 1f) => 
+        public Task SendSoundAsync(Sounds soundId, SoundPosition position, SoundCategory category = SoundCategory.Master, float pitch = 1f, float volume = 1f) =>
             client.QueuePacketAsync(new SoundEffect(soundId, position, category, pitch, volume));
 
         public Task SendNamedSoundAsync(string name, SoundPosition position, SoundCategory category = SoundCategory.Master, float pitch = 1f, float volume = 1f) =>
@@ -285,9 +284,9 @@ namespace Obsidian.Entities
         public Task KickAsync(string reason) => this.client.DisconnectAsync(ChatMessage.Simple(reason));
         public Task KickAsync(IChatMessage reason)
         {
-            var chatMessage = reason as ChatMessage;
-            if (chatMessage is null)
+            if (reason is not ChatMessage chatMessage)
                 return Task.FromException(new Exception("Message was of the wrong type or null. Expected instance supplied by IChatMessage.CreateNew."));
+
             return KickAsync(chatMessage);
         }
         public Task KickAsync(ChatMessage reason) => this.client.DisconnectAsync(reason);
@@ -311,7 +310,20 @@ namespace Obsidian.Entities
                 await stream.WriteEntityMetdata(19, EntityMetadataType.Nbt, this.RightShoulder);
         }
 
-        public Task OpenInventoryAsync(Inventory inventory) => this.client.QueuePacketAsync(new OpenWindow(inventory));
+        public async Task OpenInventoryAsync(Inventory inventory)
+        {
+            await this.client.QueuePacketAsync(new OpenWindow(inventory));
+
+            if (inventory.GetItems().Count() > 0)
+            {
+                await this.client.QueuePacketAsync(new WindowItems
+                {
+                    WindowId = inventory.Id,
+                    Count = (short)inventory.GetItems().Length,
+                    Items = inventory.GetItems().ToList()
+                });
+            }
+        }
         public override string ToString() => this.Username;
 
         public async Task SetGamemodeAsync(Gamemode gamemode)

@@ -1,5 +1,4 @@
 ﻿using Microsoft.Extensions.Logging;
-using Newtonsoft.Json.Schema;
 using Obsidian.Entities;
 using Obsidian.Items;
 using Obsidian.Net.Packets.Play.Client;
@@ -32,28 +31,19 @@ namespace Obsidian.Net.Packets.Play.Server
         {
             Globals.PacketLogger.LogDebug("Creative inventory click");
 
-            var inventory = player.OpenedInventory != null ? player.OpenedInventory : player.Inventory;
+            var inventory = player.OpenedInventory ?? player.Inventory;
 
-            inventory.SetItem(this.ClickedSlot, new ItemStack(this.ClickedItem.Id, this.ClickedItem.Count)
-            {
-                Nbt = this.ClickedItem.Nbt,
-                Present = this.ClickedItem.Present
-            });
+            inventory.SetItem(this.ClickedSlot, this.ClickedItem);
 
             if (this.ClickedSlot >= 36 && this.ClickedSlot <= 44)
             {
                 var heldItem = player.GetHeldItem();
+                
                 await server.BroadcastPacketAsync(new EntityEquipment
                 {
                     EntityId = player.EntityId,
                     Slot = ESlot.MainHand,
-                    Item = new ItemStack
-                    {
-                        Present = heldItem.Present,
-                        Count = (sbyte)heldItem.Count,
-                        Id = heldItem.Id,
-                        Nbt = heldItem.Nbt
-                    }
+                    Item = heldItem
                 }, player);
             }
         }

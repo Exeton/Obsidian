@@ -1,5 +1,6 @@
 ﻿using Obsidian.Items;
 using Obsidian.Net;
+using Obsidian.Util.Registry;
 using System;
 using System.Threading.Tasks;
 
@@ -11,7 +12,7 @@ namespace Obsidian.Entities
 
         public sbyte Count { get; set; }
 
-        public ItemNbt Nbt { get; set; }
+        public ItemMeta Nbt { get; set; }
 
         public bool CanPickup { get; set; }
 
@@ -21,12 +22,13 @@ namespace Obsidian.Entities
         {
             await base.WriteAsync(stream);
 
-            await stream.WriteEntityMetdata(7, EntityMetadataType.Slot, new ItemStack
+            var newItem = this.Nbt;
+
+            newItem.Name = Registry.GetItem(this.Id).TrimmedName;
+
+            await stream.WriteEntityMetdata(7, EntityMetadataType.Slot, new ItemStack((short)this.Id, newItem)
             {
                 Present = true,
-                Id = this.Id,
-                Count = this.Count,
-                Nbt = this.Nbt
             });
         }
 

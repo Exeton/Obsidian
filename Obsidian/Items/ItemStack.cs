@@ -3,24 +3,30 @@ using Obsidian.Util.Registry;
 
 namespace Obsidian.Items
 {
-    public class ItemStack : Item
+    public struct ItemStack
     {
-        public bool Present { get; set; }
+        public static ItemStack Air = new ItemStack(0, new ItemMeta { Name = "Air" });
 
-        public int Count { get; set; }
+        public short Id { get; internal set; }
+        public short Count { get; private set; }
+        internal bool Present { get; set; }
+        public Materials Type { get; }
 
-        public ItemStack() : base(Materials.Air) { }
+        public ItemMeta Metadata { get; set; }
 
-        public ItemStack(int itemId, int itemCount) : base(Registry.GetItem(itemId).Type)
+        public ItemStack(short itemId, ItemMeta meta)
         {
             this.Id = itemId;
-            this.Count = itemCount;
+            this.Metadata = meta;
+            this.Count = meta != null ? meta.Count : 0;
+            this.Type = Registry.GetItem(itemId).Type;
+            this.Present = true;
         }
 
-        public static ItemStack operator -(ItemStack item, int value)
+        public static ItemStack operator -(ItemStack item, short value)
         {
             if (item.Count <= 0)
-                return new ItemStack(0, 0);
+                return new ItemStack(0, new ItemMeta { Name = "Air" });
 
             item.Count -= value;
             return item;

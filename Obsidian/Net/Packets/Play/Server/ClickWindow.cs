@@ -66,7 +66,7 @@ namespace Obsidian.Net.Packets.Play.Server
             this.Item = await stream.ReadSlotAsync();
         }
 
-        public Task HandleAsync(Obsidian.Server server, Player player)
+        public async Task HandleAsync(Obsidian.Server server, Player player)
         {
             var inventory = this.WindowId > 0 ? player.OpenedInventory : player.Inventory;
 
@@ -77,6 +77,9 @@ namespace Obsidian.Net.Packets.Play.Server
                 _ when this.ClickedSlot <= inventory.Size - 1 => 0,
                 _ => 0,
             };
+
+            Console.WriteLine(this.Item.Id);
+            
 
             if (subBy > 0)
             {
@@ -91,7 +94,7 @@ namespace Obsidian.Net.Packets.Play.Server
             switch (this.Mode)
             {
                 case InventoryOperationMode.MouseClick:
-                    this.HandleMouseClick(inventory, server, player, subBy);
+                    await this.HandleMouseClick(inventory, server, player, subBy);
                     break;
 
                 case InventoryOperationMode.ShiftMouseClick:
@@ -119,8 +122,6 @@ namespace Obsidian.Net.Packets.Play.Server
                 default:
                     break;
             }
-
-            return Task.CompletedTask;
         }
 
         private async Task HandleMouseClick(Inventory inventory, Obsidian.Server server, Player player, int subBy)
@@ -135,21 +136,33 @@ namespace Obsidian.Net.Packets.Play.Server
                 if (evt.Cancel)
                     return;
 
-                player.LastClickedItem = this.Item;   
+                player.LastClickedItem = this.Item;
             }
 
             if (this.Button == 0)
             {
-                if(player.LastClickedItem?.Id > 0 && this.Item.Id == 0)
+                if (player.LastClickedItem.Id > 0 && this.Item.Id == 0)
                 {
+                    player.LastClickedItem.Metadata.Slot = (byte)(this.ClickedSlot - subBy);
+
                     inventory.SetItem(this.ClickedSlot - subBy, player.LastClickedItem);
 
-                    player.LastClickedItem = null;
+                    player.LastClickedItem = default;
+
+                    return;
                 }
+
+                player.LastClickedItem = inventory.GetItem(this.ClickedSlot - subBy);
+                player.LastClickedItem.Metadata.Slot = (byte)(this.ClickedSlot - subBy);
+
+                inventory.SetItem(this.ClickedSlot - subBy, this.Item);
             }
             else
             {
-                inventory.RemoveItem(this.ClickedSlot - subBy, this.Item.Count / 2);
+                if (this.Item.Id == 0)
+                    return;
+
+                inventory.RemoveItem(this.ClickedSlot - subBy, (short)(this.Item.Count / 2));
             }
         }
 
@@ -171,9 +184,9 @@ namespace Obsidian.Net.Packets.Play.Server
                         return;
 
                     //creative copy
-                    inventory.SetItem(this.ClickedSlot - subBy, new ItemStack(this.Item.Id, this.Item.Count)
+                    inventory.SetItem(this.ClickedSlot - subBy, new ItemStack(this.Item.Id, this.Item.Metadata)
                     {
-                        Nbt = this.Item.Nbt
+                        Present = true
                     });
                 }
                 else
@@ -182,9 +195,9 @@ namespace Obsidian.Net.Packets.Play.Server
                         return;
 
                     //survival painting
-                    inventory.SetItem(this.ClickedSlot - subBy, new ItemStack(this.Item.Id, this.Item.Count)
+                    inventory.SetItem(this.ClickedSlot - subBy, new ItemStack(this.Item.Id, this.Item.Metadata)
                     {
-                        Nbt = this.Item.Nbt
+                        Present = true
                     });
                 }
             }

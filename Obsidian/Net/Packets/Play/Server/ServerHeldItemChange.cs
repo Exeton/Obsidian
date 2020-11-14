@@ -32,13 +32,7 @@ namespace Obsidian.Net.Packets.Play.Server
             {
                 EntityId = player.EntityId,
                 Slot = ESlot.MainHand,
-                Item = new ItemStack
-                {
-                    Present = heldItem.Present,
-                    Count = (sbyte)heldItem.Count,
-                    Id = heldItem.Id,
-                    Nbt = heldItem.Nbt
-                }
+                Item = heldItem
             }, player);
         }
     }

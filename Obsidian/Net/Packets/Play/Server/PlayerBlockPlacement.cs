@@ -84,7 +84,7 @@ namespace Obsidian.Net.Packets.Play.Server
                 {
                     if(server.CachedWindows.TryGetValue(uuid, out var inventory))
                     {
-                        Console.WriteLine($"Opened window with id of: {uuid} {JsonConvert.SerializeObject(inventory.Items, Formatting.Indented)}");
+                        Console.WriteLine($"Opened window with id of: {uuid} {JsonConvert.SerializeObject(inventory.GetItems(), Formatting.Indented)}");
 
                         await player.OpenInventoryAsync(inventory);
                         await player.client.QueuePacketAsync(new BlockAction
@@ -104,7 +104,7 @@ namespace Obsidian.Net.Packets.Play.Server
 
                 if (interactedBlock.Type == Materials.Chest)
                 {
-                    var inventory = new Inventory(9 * 3)
+                    var inventory = new Inventory(null, 9 * 3)
                     {
                         Title = "Chest",
                         Type = InventoryType.Generic,
@@ -129,7 +129,7 @@ namespace Obsidian.Net.Packets.Play.Server
                 }
                 else if (interactedBlock.Type == Materials.CraftingTable)
                 {
-                    await player.OpenInventoryAsync(new Inventory
+                    await player.OpenInventoryAsync(new Inventory(null)
                     {
                         Title = "Crafting Table",
                         Type = InventoryType.Crafting,
