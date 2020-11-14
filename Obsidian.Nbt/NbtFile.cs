@@ -649,7 +649,7 @@ namespace Obsidian.Nbt
                                              int bufferSize)
         {
             if (stream == null)
-                throw new ArgumentNullException(nameof(stream));
+                throw new ArgumentNullException("stream");
             if (bufferSize < 0)
             {
                 throw new ArgumentOutOfRangeException("bufferSize", bufferSize, "DefaultBufferSize cannot be negative.");

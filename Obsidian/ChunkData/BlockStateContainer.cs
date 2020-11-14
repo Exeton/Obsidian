@@ -11,7 +11,7 @@ namespace Obsidian.ChunkData
 
         public abstract DataArray BlockStorage { get; }
 
-        public abstract IBlockStatePalette Palette { get; internal set; }
+        public abstract IBlockStatePalette Palette { get; }
 
         protected void Set(int x, int y, int z, BlockState blockState)
         {

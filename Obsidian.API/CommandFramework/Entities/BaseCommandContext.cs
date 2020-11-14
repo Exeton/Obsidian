@@ -1,27 +1,21 @@
-﻿using Obsidian.API;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Obsidian.CommandFramework
+namespace Obsidian.CommandFramework.Entities
 {
-    public class ObsidianContext
+    public class BaseCommandContext
     {
-        internal CommandHandler Commands;
-        internal string Message;
+        internal string _message;
+        public CommandHandler Commands { get; internal set; }
 
-        public ObsidianContext(string message, IPlayer player, IServer server/*, IClient client*/)
+        /// <summary>
+        /// Constructs a new BaseCommandContext
+        /// </summary>
+        /// <param name="message">Full command text (without prefix)</param>
+        public BaseCommandContext(string message)
         {
-            this.Player = player;
-            this.Server = server;
-            this.Message = message;
-            //this.Client = client;
+            this._message = message;
         }
-
-        public IPlayer Player { get; private set; }
-
-        public IServer Server { get; private set; }
-
-        // public IClient Client { get; private set; }
     }
 }

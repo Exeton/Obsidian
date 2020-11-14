@@ -1,7 +1,6 @@
 ﻿using ICSharpCode.SharpZipLib;
 using SharpNoise;
 using SharpNoise.Modules;
-using System;
 using System.Collections.Generic;
 
 namespace Obsidian.WorldData.Generators.Overworld
@@ -161,8 +160,7 @@ namespace Obsidian.WorldData.Generators.Overworld
 
         public bool isRiver(float x, float z)
         {
-            var value = generator.RiversPos.GetValue(x * generatorSettings.TerrainHorizStretch, 0, z * generatorSettings.TerrainHorizStretch);
-            return value < 0.5 && !isOcean(x, z) && !isDeepOcean(x, z);
+            return generator.RiversPos.GetValue(x * generatorSettings.TerrainHorizStretch, 0, z * generatorSettings.TerrainHorizStretch) < 0.5;
         }
 
         public bool isMountain(float x, float z)
@@ -188,11 +186,6 @@ namespace Obsidian.WorldData.Generators.Overworld
             return value > -0.15;
         }
 
-        public int OceanFloor(int x, int z)
-        {
-            return (int)Math.Min(generator.BaseContinents.GetValue(x * generatorSettings.TerrainHorizStretch, 0, z * generatorSettings.TerrainHorizStretch) * generatorSettings.TerrainVertStretch, 0);
-        }
-
         public bool isOcean(float x, float z)
         {
             var value = generator.BaseContinents.GetValue(x * generatorSettings.TerrainHorizStretch, 0, z * generatorSettings.TerrainHorizStretch);
@@ -202,17 +195,17 @@ namespace Obsidian.WorldData.Generators.Overworld
         public bool isDeepOcean(float x, float z)
         {
             var value = generator.BaseContinents.GetValue(x * generatorSettings.TerrainHorizStretch, 0, z * generatorSettings.TerrainHorizStretch);
-            return value < -0.4 && !isPlains(x, z);
+            return value < -0.4;
         }
 
         public double GetBiomeTemp(int x, int y, int z)
         {
-            return BiomeNoise.GetValue(x * generatorSettings.TerrainHorizStretch/6, 0, z * generatorSettings.TerrainHorizStretch/6);
+            return BiomeNoise.GetValue(x * generatorSettings.TerrainHorizStretch/10, 0, z * generatorSettings.TerrainHorizStretch/10);
         }
 
         public double GetBiomeHumidity(int x, int y, int z)
         {
-            return BiomeHumidity.GetValue(x * generatorSettings.TerrainHorizStretch/6, 0, z * generatorSettings.TerrainHorizStretch/6);
+            return BiomeHumidity.GetValue(x * generatorSettings.TerrainHorizStretch/10, 0, z * generatorSettings.TerrainHorizStretch/10);
         }
 
         /// <summary>

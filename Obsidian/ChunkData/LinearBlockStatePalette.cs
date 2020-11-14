@@ -1,7 +1,6 @@
 ﻿using Obsidian.Blocks;
 using Obsidian.Net;
 using Obsidian.Util.Registry;
-using System;
 using System.Threading.Tasks;
 
 namespace Obsidian.ChunkData
@@ -20,12 +19,9 @@ namespace Obsidian.ChunkData
 
         public int GetIdFromState(Block blockState)
         {
-            if (blockState is null)
-                throw new ArgumentNullException(nameof(blockState));
-
             for (int id = 0; id < BlockStateCount; id++)
             {
-                if (this.BlockStateArray[id].Id == blockState.Id)
+                if (this.BlockStateArray[id] == blockState)
                     return id;
             }
 

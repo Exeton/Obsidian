@@ -1,5 +1,4 @@
 ﻿using Obsidian.API;
-using Obsidian.CommandFramework;
 using Obsidian.CommandFramework.ArgumentParsers;
 using Obsidian.CommandFramework.Entities;
 using Obsidian.Entities;
@@ -12,9 +11,9 @@ namespace Obsidian.Commands.Parsers
     public class PlayerTypeParser : BaseArgumentParser<IPlayer>
     {
         public PlayerTypeParser() : base("obsidian:player") { }
-        public override bool TryParseArgument(string input, ObsidianContext context, out IPlayer result)
+        public override bool TryParseArgument(string input, BaseCommandContext context, out IPlayer result)
         {
-            var ctx = context;
+            var ctx = (ObsidianContext)context;
             var server = (Server)ctx.Server;
 
             Player player = null;

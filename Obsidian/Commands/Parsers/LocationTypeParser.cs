@@ -1,5 +1,4 @@
 ﻿using Obsidian.API;
-using Obsidian.CommandFramework;
 using Obsidian.CommandFramework.ArgumentParsers;
 using Obsidian.CommandFramework.Entities;
 using Obsidian.Entities;
@@ -11,7 +10,7 @@ namespace Obsidian.Commands.Parsers
     public class LocationTypeParser : BaseArgumentParser<Position>
     {
         public LocationTypeParser() : base("minecraft:vec3") { }
-        public override bool TryParseArgument(string input, ObsidianContext context, out Position result)
+        public override bool TryParseArgument(string input, BaseCommandContext context, out Position result)
         {
             result = default;
 
@@ -19,7 +18,7 @@ namespace Obsidian.Commands.Parsers
             var location = new Position();
 
             int count = 0;
-            var ctx = context;
+            var ctx = (ObsidianContext)context;
             foreach (var text in splitted)
             {
                 if (double.TryParse(text, out var doubleResult))

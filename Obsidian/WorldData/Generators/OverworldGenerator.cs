@@ -33,8 +33,6 @@ namespace Obsidian.WorldData.Generators
                     int worldX = bx + (cx << 4);
                     int worldZ = bz + (cz << 4);
                     terrainHeightmap[bx, bz] = noiseGen.Terrain(worldX, worldZ);
-                    chunk.Heightmaps[ChunkData.HeightmapType.WorldSurface].Set(bx, bz, (int)terrainHeightmap[bx, bz]);
-                    chunk.Heightmaps[ChunkData.HeightmapType.OceanFloor].Set(bx, bz, noiseGen.OceanFloor(bx, bz));
                     rockHeightmap[bx, bz] = noiseGen.Underground(worldX, worldZ) + terrainHeightmap[bx, bz] - 5;
                     bedrockHeightmap[bx, bz] = noiseGen.Bedrock(worldX, worldZ) + 1;
 
@@ -53,7 +51,7 @@ namespace Obsidian.WorldData.Generators
             
 
             ChunkBuilder.FillChunk(chunk, terrainHeightmap, rockHeightmap, bedrockHeightmap);
-/*            for (int bx = 0; bx < 16; bx++)
+            for (int bx = 0; bx < 16; bx++)
             {
                 for (int bz = 0; bz < 16; bz++)
                 {
@@ -78,20 +76,11 @@ namespace Obsidian.WorldData.Generators
                     if (noiseGen.isDeepOcean(bx + (cx * 16), bz + (cz * 16)))
                         chunk.SetBlock(bx, 101, bz, Registry.GetBlock(Materials.BlueStainedGlass));
                 }
-            }*/
+            }
 
             OverworldDecorator.Decorate(chunk, terrainHeightmap, noiseGen);
             GenerateCoal(chunk, rockHeightmap);
             ChunkBuilder.CarveCaves(noiseGen, chunk, rockHeightmap, bedrockHeightmap);
-
-
-            for (int bx = 0; bx < 16; bx++)
-            {
-                for (int bz = 0; bz < 16; bz++)
-                {
-                    chunk.Heightmaps[ChunkData.HeightmapType.MotionBlocking].Set(bx, bz, (int)terrainHeightmap[bx,bz]);
-                }
-            }                    
             return chunk;
         }
 

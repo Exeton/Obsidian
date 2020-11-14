@@ -79,17 +79,17 @@ namespace Obsidian.CommandFramework.Entities
         /// <typeparam name="T">Context type.</typeparam>
         /// <param name="Context">Execution context.</param>
         /// <returns></returns>
-        public async Task ExecuteAsync(ObsidianContext context, string[] args)
+        public async Task ExecuteAsync<T>(T context, string[] args) where T : BaseCommandContext
         {
             // Find matching overload
             if (!this.Overloads.Any(x => x.GetParameters().Count() - 1 == args.Count()
-             || x.GetParameters().Last().GetCustomAttribute<RemainingAttribute>() != null))
+             || x.GetParameters().Last().CustomAttributes.Any(y => typeof(RemainingAttribute).IsAssignableFrom(y.AttributeType))))
             {
                 throw new InvalidCommandOverloadException($"No such overload for command {this.GetQualifiedName()}");
             }
 
             var method = this.Overloads.First(x => x.GetParameters().Count() - 1 == args.Count()
-            || x.GetParameters().Last().GetCustomAttribute<RemainingAttribute>() != null);
+            || x.GetParameters().Last().CustomAttributes.Any(y => typeof(RemainingAttribute).IsAssignableFrom(y.AttributeType)));
 
             // create instance of declaring type to execute.
             var obj = Activator.CreateInstance(method.DeclaringType);
@@ -143,11 +143,12 @@ namespace Obsidian.CommandFramework.Entities
             }
 
             // do execution checks
-            var checks = method.GetCustomAttributes<BaseExecutionCheckAttribute>();
+            var checks = method.CustomAttributes.Where(x => typeof(BaseExecutionCheckAttribute).IsAssignableFrom(x.AttributeType));
 
             foreach (var c in checks)
             {
-                if (!await c.RunChecksAsync(context))
+                var check = (BaseExecutionCheckAttribute)Activator.CreateInstance(c.AttributeType);
+                if (!await check.RunChecksAsync(context))
                 {
                     // A check failed.
                     // TODO: Tell user what arg failed?

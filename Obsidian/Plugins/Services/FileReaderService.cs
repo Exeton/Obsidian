@@ -2,7 +2,6 @@
 using Obsidian.API.Plugins.Services;
 using Obsidian.API.Plugins.Services.IO;
 using Obsidian.Plugins.ServiceProviders;
-using System;
 using System.IO;
 using System.Security;
 using System.Threading;
@@ -13,7 +12,6 @@ namespace Obsidian.Plugins.Services
     public class FileReaderService : SecuredServiceBase, IFileReader
     {
         internal override PluginPermissions NeededPermission => PluginPermissions.CanRead;
-        private string workingDirectory = null;
 
         public FileReaderService(PluginContainer plugin) : base(plugin)
         {
@@ -24,13 +22,6 @@ namespace Obsidian.Plugins.Services
             if (!IsUsable)
                 throw new SecurityException(IFileReader.securityExceptionMessage);
 
-            workingDirectory ??= GetWorkingDirectory();
-
-            if (!Path.GetDirectoryName(Path.GetFullPath(path)).StartsWith(workingDirectory, true, null) && Path.IsPathFullyQualified(path)) throw new UnauthorizedAccessException(path);
-
-            if (workingDirectory != null && !Path.IsPathFullyQualified(path))
-                path = Path.Combine(Path.GetDirectoryName(Path.GetFullPath(workingDirectory)), path);
-
             return new ReadingStreamService(File.OpenRead(path));
         }
 
@@ -38,13 +29,6 @@ namespace Obsidian.Plugins.Services
         {
             if (!IsUsable)
                 throw new SecurityException(IFileReader.securityExceptionMessage);
-
-            workingDirectory ??= GetWorkingDirectory();
-
-            if (!Path.GetDirectoryName(Path.GetFullPath(path)).StartsWith(workingDirectory, true, null) && Path.IsPathFullyQualified(path)) throw new UnauthorizedAccessException(path);
-
-            if (workingDirectory != null && !Path.IsPathFullyQualified(path))
-                path = Path.Combine(Path.GetDirectoryName(Path.GetFullPath(workingDirectory)), path);
 
             return File.ReadAllBytes(path);
         }
@@ -54,13 +38,6 @@ namespace Obsidian.Plugins.Services
             if (!IsUsable)
                 throw new SecurityException(IFileReader.securityExceptionMessage);
 
-            workingDirectory ??= GetWorkingDirectory();
-
-            if (!Path.GetDirectoryName(Path.GetFullPath(path)).StartsWith(workingDirectory, true, null) && Path.IsPathFullyQualified(path)) throw new UnauthorizedAccessException(path);
-
-            if (workingDirectory != null && !Path.IsPathFullyQualified(path))
-                path = Path.Combine(Path.GetDirectoryName(Path.GetFullPath(workingDirectory)), path);
-
             return File.ReadAllBytesAsync(path, cancellationToken);
         }
 
@@ -69,13 +46,6 @@ namespace Obsidian.Plugins.Services
             if (!IsUsable)
                 throw new SecurityException(IFileReader.securityExceptionMessage);
 
-            workingDirectory ??= GetWorkingDirectory();
-
-            if (!Path.GetDirectoryName(Path.GetFullPath(path)).StartsWith(workingDirectory, true, null) && Path.IsPathFullyQualified(path)) throw new UnauthorizedAccessException(path);
-
-            if (workingDirectory != null && !Path.IsPathFullyQualified(path))
-                path = Path.Combine(Path.GetDirectoryName(Path.GetFullPath(workingDirectory)), path);
-
             return File.ReadAllLines(path);
         }
 
@@ -83,13 +53,6 @@ namespace Obsidian.Plugins.Services
         {
             if (!IsUsable)
                 throw new SecurityException(IFileReader.securityExceptionMessage);
-            
-            workingDirectory ??= GetWorkingDirectory();
-
-            if (!Path.GetDirectoryName(Path.GetFullPath(path)).StartsWith(workingDirectory, true, null) && Path.IsPathFullyQualified(path)) throw new UnauthorizedAccessException(path);
-
-            if (workingDirectory != null && !Path.IsPathFullyQualified(path))
-                path = Path.Combine(Path.GetDirectoryName(Path.GetFullPath(workingDirectory)), path);
 
             return File.ReadAllLinesAsync(path, cancellationToken);
         }
@@ -99,13 +62,6 @@ namespace Obsidian.Plugins.Services
             if (!IsUsable)
                 throw new SecurityException(IFileReader.securityExceptionMessage);
 
-            workingDirectory ??= GetWorkingDirectory();
-
-            if (!Path.GetDirectoryName(Path.GetFullPath(path)).StartsWith(workingDirectory, true, null) && Path.IsPathFullyQualified(path)) throw new UnauthorizedAccessException(path);
-
-            if (workingDirectory != null && !Path.IsPathFullyQualified(path))
-                path = Path.Combine(Path.GetDirectoryName(Path.GetFullPath(workingDirectory)), path);
-
             return File.ReadAllText(path);
         }
 
@@ -114,28 +70,7 @@ namespace Obsidian.Plugins.Services
             if (!IsUsable)
                 throw new SecurityException(IFileReader.securityExceptionMessage);
 
-            workingDirectory ??= GetWorkingDirectory();
-
-            if (!Path.GetDirectoryName(Path.GetFullPath(path)).StartsWith(workingDirectory, true, null) && Path.IsPathFullyQualified(path)) throw new UnauthorizedAccessException(path);
-
-            if (workingDirectory != null && !Path.IsPathFullyQualified(path))
-                path = Path.Combine(Path.GetDirectoryName(Path.GetFullPath(workingDirectory)), path);
-
             return File.ReadAllTextAsync(path, cancellationToken);
         }
-
-        public string CreateWorkingDirectory(bool createOwnDirectory = true, bool skipFolderAutoGeneration = false)
-        {
-            workingDirectory = createOwnDirectory switch
-            {
-                true => Path.Combine(Path.GetDirectoryName(Path.GetFullPath(plugin.Source)), plugin.Plugin.Info.Name.Replace(" ", "")),
-                false => Path.GetDirectoryName(Path.GetFullPath(plugin.Source))
-            };
-
-            if (createOwnDirectory && !skipFolderAutoGeneration && !Directory.Exists(workingDirectory)) Directory.CreateDirectory(workingDirectory);
-
-            return workingDirectory;
-        }
-        public string GetWorkingDirectory() => workingDirectory ?? CreateWorkingDirectory();
     }
 }

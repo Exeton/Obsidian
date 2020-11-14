@@ -18,8 +18,6 @@ namespace Obsidian.Events
         private readonly AsyncEvent<ServerStatusRequestEventArgs> serverStatusRequest;
         private readonly AsyncEvent serverTick;
         private readonly AsyncEvent<PlayerTeleportEventArgs> playerTeleported;
-        private readonly AsyncEvent<PermissionGrantedEventArgs> permissionGranted;
-        private readonly AsyncEvent<PermissionRevokedEventArgs> permissionRevoked;
         public MinecraftEventHandler()
         {
             // Events that don't need additional arguments
@@ -29,8 +27,6 @@ namespace Obsidian.Events
             this.playerJoin = new AsyncEvent<PlayerJoinEventArgs>(HandleException, "PlayerJoin");
             this.playerLeave = new AsyncEvent<PlayerLeaveEventArgs>(HandleException, "PlayerLeave");
             this.serverTick = new AsyncEvent(HandleException, "ServerTick");
-            this.permissionGranted = new AsyncEvent<PermissionGrantedEventArgs>(HandleException, "PermissionGranted");
-            this.permissionRevoked = new AsyncEvent<PermissionRevokedEventArgs>(HandleException, "PermissionRevoked");
             this.clickEvent = new AsyncEvent<InventoryClickEventArgs>(HandleException, "InventoryClick");
             this.blockInteract = new AsyncEvent<BlockInteractEventArgs>(HandleException, "Block Interact");
             this.incomingChatMessage = new AsyncEvent<IncomingChatMessageEventArgs>(HandleException, "IncomingChatMessage");
@@ -63,17 +59,6 @@ namespace Obsidian.Events
         {
             add { this.clickEvent.Register(value); }
             remove { this.clickEvent.Unregister(value); }
-        }
-
-        public event AsyncEventHandler<PermissionGrantedEventArgs> PermissionGranted
-        {
-            add { this.permissionGranted.Register(value); }
-            remove { this.permissionGranted.Unregister(value); }
-        }
-        public event AsyncEventHandler<PermissionRevokedEventArgs> PermissionRevoked
-        {
-            add { this.permissionRevoked.Register(value); }
-            remove { this.permissionRevoked.Unregister(value); }
         }
 
         public event AsyncEventHandler<PlayerJoinEventArgs> PlayerJoin
@@ -146,16 +131,6 @@ namespace Obsidian.Events
             await this.playerTeleported.InvokeAsync(eventArgs);
             return eventArgs;
         }
-        internal async Task<PermissionGrantedEventArgs> InvokePermissionGrantedAsync(PermissionGrantedEventArgs eventArgs)
-        {
-            await this.permissionGranted.InvokeAsync(eventArgs);
-            return eventArgs;
-        }
-        internal async Task<PermissionRevokedEventArgs> InvokePermissionRevokedAsync(PermissionRevokedEventArgs eventArgs)
-        {
-            await this.permissionRevoked.InvokeAsync(eventArgs);
-            return eventArgs;
-        }
 
         internal Task InvokePacketReceivedAsync(PacketReceivedEventArgs eventArgs) =>
             this.packetReceived.InvokeAsync(eventArgs);
@@ -169,7 +144,7 @@ namespace Obsidian.Events
         internal Task InvokeServerTickAsync() =>
             this.serverTick.InvokeAsync();
 
-        internal async Task<ServerStatusRequestEventArgs> InvokeServerStatusRequest(ServerStatusRequestEventArgs eventargs)
+        internal async Task<ServerStatusRequestEventArgs> InvokeServerServerStatusRequest(ServerStatusRequestEventArgs eventargs)
         {
             await this.serverStatusRequest.InvokeAsync(eventargs);
 

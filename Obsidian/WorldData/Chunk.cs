@@ -15,6 +15,13 @@ namespace Obsidian.WorldData
 
         public BiomeContainer BiomeContainer { get; private set; } = new BiomeContainer();
 
+        public Dictionary<short, Block> Blocks { get; private set; } = new Dictionary<short, Block>();
+        public Dictionary<short, MetadataStore> Metadata { get; private set; } = new Dictionary<short, MetadataStore>();
+
+        public ChunkSection[] Sections { get; private set; } = new ChunkSection[16];
+        public List<NbtTag> BlockEntities { get; private set; } = new List<NbtTag>();
+
+        public Dictionary<HeightmapType, Heightmap> Heightmaps { get; private set; } = new Dictionary<HeightmapType, Heightmap>();
 
         public Chunk(int x, int z)
         {
@@ -22,8 +29,6 @@ namespace Obsidian.WorldData
             this.Z = z;
 
             this.Heightmaps.Add(HeightmapType.MotionBlocking, new Heightmap(HeightmapType.MotionBlocking, this));
-            this.Heightmaps.Add(HeightmapType.OceanFloor, new Heightmap(HeightmapType.OceanFloor, this));
-            this.Heightmaps.Add(HeightmapType.WorldSurface, new Heightmap(HeightmapType.WorldSurface, this));
 
             this.Init();
         }
@@ -31,7 +36,7 @@ namespace Obsidian.WorldData
         private void Init()
         {
             for (int i = 0; i < 16; i++)
-                this.Sections[i] = new ChunkSection(4, i);
+                this.Sections[i] = new ChunkSection(yBase: i);
         }
 
         public Block GetBlock(Position position) => this.GetBlock((int)position.X, (int)position.Y, (int)position.Z);
