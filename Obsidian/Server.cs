@@ -81,7 +81,7 @@ namespace Obsidian
         public string Version { get; }
         public int Port { get; }
 
-        public World World { get; }
+        public World World { get; private set; }
         public IWorld DefaultWorld => World;
 
         public string ServerFolderPath => Path.GetFullPath($"Server-{this.Id}");
@@ -96,7 +96,7 @@ namespace Obsidian
 
             ServerImplementationRegistry.RegisterServerImplementations();
 
-            this.LoggerProvider = new LoggerProvider(LogLevel.Debug);
+            this.LoggerProvider = new LoggerProvider(Globals.Config.LogLevel);
             this.Logger = this.LoggerProvider.CreateLogger($"Server/{this.Id}");
             // This stuff down here needs to be looked into
             Globals.PacketLogger = this.LoggerProvider.CreateLogger("Packets");
@@ -127,7 +127,6 @@ namespace Obsidian
             this.Commands.AddArgumentParser(new PlayerTypeParser());
 
             Logger.LogDebug("Registering command context type...");
-            this.Commands.RegisterContextType<ObsidianContext>();
             Logger.LogDebug("Done registering commands.");
 
             this.Events = new MinecraftEventHandler();
@@ -135,8 +134,6 @@ namespace Obsidian
             this.PluginManager = new PluginManager(Events, this, LoggerProvider.CreateLogger("Plugin Manager"));
 
             this.Operators = new OperatorList(this);
-
-            this.World = new World("world", this);
 
             this.Events.PlayerLeave += this.OnPlayerLeave;
             this.Events.PlayerJoin += this.OnPlayerJoin;
@@ -242,15 +239,17 @@ namespace Obsidian
             this.PluginManager.DirectoryWatcher.Watch(Path.Join(ServerFolderPath, "plugins"));
             await Task.WhenAll(Config.DownloadPlugins.Select(path => PluginManager.LoadPluginAsync(path)));
 
-            if (!this.WorldGenerators.TryGetValue(this.Config.Generator, out WorldGenerator value))
-                this.Logger.LogWarning($"Unknown generator type {this.Config.Generator}");
-
-            this.World.Generator = value ?? new SuperflatGenerator();
-
-            this.Logger.LogInformation($"World generator set to {this.World.Generator.Id} ({this.World.Generator})");
-
-            this.World.GenerateWorld();
-
+            this.World = new World("world1", this);
+            if (!this.World.Load())
+            {
+                if (!this.WorldGenerators.TryGetValue(this.Config.Generator, out WorldGenerator value))
+                    this.Logger.LogWarning($"Unknown generator type {this.Config.Generator}");
+                var gen = value ?? new SuperflatGenerator();
+                this.Logger.LogInformation($"Creating new {gen.Id} ({gen}) world...");
+                this.World.Init(gen);
+                this.World.Save();
+            }
+            
             if (!this.Config.OnlineMode)
                 this.Logger.LogInformation($"Starting in offline mode...");
 
