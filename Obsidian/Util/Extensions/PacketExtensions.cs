@@ -1,5 +1,6 @@
 ﻿using Obsidian.API;
 using Obsidian.Chat;
+using Obsidian.Entities;
 using Obsidian.Items;
 using Obsidian.Net;
 using Obsidian.Net.Packets;
@@ -107,6 +108,17 @@ namespace Obsidian.Util.Extensions
 
                 default:
                     return DataType.Auto;
+            }
+        }
+
+        internal static EntityType ToEntityType(this Type type)
+        {
+            switch (type.Name)
+            {
+                case "Pig":
+                    return EntityType.Pig;
+                default:
+                    return EntityType.Zombie;
             }
         }
 

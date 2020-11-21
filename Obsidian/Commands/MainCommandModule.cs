@@ -354,6 +354,17 @@ namespace Obsidian.Commands
         }
         #endregion
 
+        #region summon
+        [Command("summon")]
+        [CommandInfo("Summons a mob", "/summon")]
+        public async Task SummonAsync(ObsidianContext obsidianContext)
+        {
+            Position playerPosition = obsidianContext.Player.Location;
+            Entity entity = new Pig() { Location = new Position(0, 100, 0) };
+            obsidianContext.Player.WorldLocation.TryAddEntity(entity);
+
+        }
+        #endregion
 
         #region permissions
         [CommandGroup("permission")]

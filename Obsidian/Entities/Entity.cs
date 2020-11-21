@@ -31,9 +31,17 @@ namespace Obsidian.Entities
         public Angle Pitch { get; set; }
 
         public Angle Yaw { get; set; }
+
+        public Velocity velocity { get; set; } = new Velocity(0, 0, 0);
         #endregion Location properties
 
+
+        private static int EntityIdCounter = 50;
+        private static object EntityIdLock = new object();
+
         public int EntityId { get; internal set; }
+
+        public Guid EntityUUID { get; set; } = Guid.NewGuid();
 
         public EntityBitMask EntityBitMask { get; set; }
 
@@ -48,7 +56,13 @@ namespace Obsidian.Entities
         public bool NoGravity { get; set; }
         public bool OnGround { get; set; }
 
-        public Entity() { }
+        public Entity() 
+        {
+            lock (EntityIdLock)
+            {
+                EntityId = ++EntityIdCounter;
+            }
+        }
 
         #region Update methods
         internal virtual async Task UpdateAsync(Server server, Position position, bool onGround)

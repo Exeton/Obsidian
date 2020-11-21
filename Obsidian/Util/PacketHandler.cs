@@ -47,7 +47,7 @@ namespace Obsidian
             Packets.TryAdd(0x0A, new CloseWindow());
             Packets.TryAdd(0x0B, new PluginMessage());
             //Packets.TryAdd(0x0C, EditBook);
-            //Packets.TryAdd(0x0E, InteractEntity);
+            Packets.TryAdd(0x0E, new InteractEntity());
             //Packets.TryAdd(0x0F, GenerateStructure);
             Packets.TryAdd(0x10, new KeepAlive());
             //Packets.TryAdd(0x11, LockDifficulty);

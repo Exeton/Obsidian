@@ -300,6 +300,22 @@ namespace Obsidian.Entities
 
         public Task SendBossBarAsync(Guid uuid, BossBarAction action) => client.QueuePacketAsync(new BossBar(uuid, action));
 
+        public Task SendEntityAsync(Entity entity)
+        {
+            SpawnLivingEntity packet = new SpawnLivingEntity()
+            {
+                Pitch = entity.Pitch,
+                HeadPitch = entity.Pitch,
+                Position = entity.Location,
+                Type = entity.GetType().ToEntityType(),
+                Velocity = entity.velocity,
+                Yaw = entity.Yaw,
+                EntityId = entity.EntityId,
+                Uuid = entity.EntityUUID
+            };
+            return client.QueuePacketAsync(packet);
+        }
+
         public Task KickAsync(string reason) => this.client.DisconnectAsync(ChatMessage.Simple(reason));
         public Task KickAsync(IChatMessage reason)
         {

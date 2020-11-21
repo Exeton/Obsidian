@@ -7,5 +7,6 @@
 
         public long Time { get; }
         public Gamemode GameType { get; }
+        public bool TryAddEntity(IEntity entity);
     }
 }

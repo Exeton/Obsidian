@@ -460,7 +460,23 @@ namespace Obsidian.WorldData
             if (region is null)
                 throw new InvalidOperationException("Region is null this wasn't supposed to happen.");
 
-            return region.Entities.TryAdd(entity.EntityId, entity);
+            bool success = region.Entities.TryAdd(entity.EntityId, entity);
+
+            if (success)
+            {
+                foreach (Player player in Server.Players)
+                    player.SendEntityAsync(entity);
+            }
+
+            return success;
+        }
+
+        public bool TryAddEntity(IEntity entity)
+        {
+            if (entity is Entity)
+                return TryAddEntity((Entity)entity);
+            else
+                throw new NotImplementedException();         
         }
     }
 

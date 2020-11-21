@@ -16,5 +16,10 @@ namespace Obsidian.Entities
             await stream.WriteEntityMetdata(16, EntityMetadataType.Boolean, this.HasSaddle);
             await stream.WriteEntityMetdata(17, EntityMetadataType.VarInt, this.TotalTimeBoost);
         }
+
+        public override Task TickAsync()
+        {
+            return base.TickAsync();
+        }
     }
 }
